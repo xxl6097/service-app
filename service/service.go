@@ -14,7 +14,7 @@ func initLog(installPath string) {
 	glog.SetLogFile(installPath+string(filepath.Separator)+"logs", "app.log")
 	glog.SetMaxSize(1 * 1024 * 1024)
 	glog.SetMaxAge(15)
-	//glog.SetCons(true)
+	glog.SetCons(true)
 	glog.SetNoHeader(true)
 	glog.SetNoColor(true)
 }
@@ -22,15 +22,15 @@ func initLog(installPath string) {
 func Menu(config *deamon.Config, installer *deamon.Installer) {
 	var choice int
 	for {
-		glog.Println("1. 安装")
-		glog.Println("2. 卸载")
-		glog.Println("3. 启动")
-		glog.Println("4. 停止")
-		glog.Println("5. 重启")
-		glog.Println("6. 状态")
-		glog.Println("7. 版本")
-		glog.Println("8. 退出")
-		glog.Println("请选择一个选项:")
+		fmt.Println("1. 安装")
+		fmt.Println("2. 卸载")
+		fmt.Println("3. 启动")
+		fmt.Println("4. 停止")
+		fmt.Println("5. 重启")
+		fmt.Println("6. 状态")
+		fmt.Println("7. 版本")
+		fmt.Println("8. 退出")
+		fmt.Println("请选择一个选项:")
 		fmt.Scan(&choice)
 		switch choice {
 		case 1:
@@ -68,13 +68,15 @@ func Run(config *deamon.Config, run func()) {
 	if config == nil {
 		glog.Fatal("config is nil")
 	}
+	fmt.Println("Run...")
 	installPath := defaultInstallPath + string(filepath.Separator) + config.ProductName
 	initLog(installPath)
 	rand.Seed(time.Now().UnixNano())
 	baseDir := filepath.Dir(os.Args[0])
 	os.Chdir(baseDir) // for system service
-	//glog.Println("baseDir:", baseDir)
-	//glog.Println("os.Args:", len(os.Args), os.Args)
+
+	fmt.Println("baseDir:", baseDir)
+	fmt.Println("os.Args:", len(os.Args), os.Args)
 	installer := deamon.NewInstall(config, installPath)
 	if len(os.Args) > 1 {
 		glog.SetNoHeader(false)
@@ -107,8 +109,10 @@ func Run(config *deamon.Config, run func()) {
 		}
 	} else {
 		//installer.InstallByFilename()
+		fmt.Println("Menu...")
 		Menu(config, installer)
 	}
+	fmt.Println("SetFirewall...")
 	SetFirewall(config.ProductName)
 	err := SetRLimit()
 	if err != nil {
