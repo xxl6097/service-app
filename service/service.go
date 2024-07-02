@@ -14,7 +14,7 @@ func initLog(installPath string) {
 	glog.SetLogFile(installPath+string(filepath.Separator)+"logs", "app.log")
 	glog.SetMaxSize(1 * 1024 * 1024)
 	glog.SetMaxAge(15)
-	glog.SetCons(true)
+	//glog.SetCons(true)
 	glog.SetNoHeader(true)
 	glog.SetNoColor(true)
 }
@@ -22,7 +22,7 @@ func initLog(installPath string) {
 func Menu(config *deamon.Config, installer *deamon.Installer) {
 	var choice int
 	for {
-		glog.Println("\r\n1. 安装")
+		glog.Println("1. 安装")
 		glog.Println("2. 卸载")
 		glog.Println("3. 启动")
 		glog.Println("4. 停止")
