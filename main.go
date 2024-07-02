@@ -11,5 +11,7 @@ func main() {
 		DisplayName: "A Test Service",
 		Description: "A Golang Service..",
 		AppVersion:  "0.0.1",
+	}, func() {
+		// 初始化服务
 	})
 }

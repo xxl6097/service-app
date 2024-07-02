@@ -64,7 +64,7 @@ func Menu(config *deamon.Config, installer *deamon.Installer) {
 	}
 }
 
-func Run(config *deamon.Config) {
+func Run(config *deamon.Config, run func()) {
 	if config == nil {
 		glog.Fatal("config is nil")
 	}
@@ -120,4 +120,7 @@ func Run(config *deamon.Config) {
 	//glog.Flush()
 	//forever := make(chan bool)
 	//<-forever
+	if run != nil {
+		run()
+	}
 }
