@@ -1,8 +1,8 @@
 package main
 
 import (
-	"service-app/service"
-	"service-app/service/deamon"
+	"github.com/xxl6097/service-app/service"
+	"github.com/xxl6097/service-app/service/deamon"
 )
 
 func main() {

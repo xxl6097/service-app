@@ -3,11 +3,11 @@ package deamon
 import (
 	"fmt"
 	"github.com/xxl6097/go-glog/glog"
+	"github.com/xxl6097/service-app/service/util"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"service-app/service/util"
 	"strings"
 	"time"
 )

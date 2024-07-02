@@ -3,10 +3,10 @@ package service
 import (
 	"fmt"
 	"github.com/xxl6097/go-glog/glog"
+	"github.com/xxl6097/service-app/service/deamon"
 	"math/rand"
 	"os"
 	"path/filepath"
-	"service-app/service/deamon"
 	"time"
 )
 
