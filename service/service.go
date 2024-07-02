@@ -68,7 +68,6 @@ func Run(config *deamon.Config, run func()) {
 	if config == nil {
 		glog.Fatal("config is nil")
 	}
-	fmt.Println("Run...")
 	installPath := defaultInstallPath + string(filepath.Separator) + config.ProductName
 	initLog(installPath)
 	rand.Seed(time.Now().UnixNano())
@@ -109,10 +108,8 @@ func Run(config *deamon.Config, run func()) {
 		}
 	} else {
 		//installer.InstallByFilename()
-		fmt.Println("Menu...")
 		Menu(config, installer)
 	}
-	fmt.Println("SetFirewall...")
 	SetFirewall(config.ProductName)
 	err := SetRLimit()
 	if err != nil {

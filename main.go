@@ -10,7 +10,6 @@ import (
 
 //go:generate goversioninfo -icon=resource/icon.ico -manifest=resource/goversioninfo.exe.manifest
 func main() {
-	fmt.Println("main...")
 	service.Run(&deamon.Config{
 		ProductName: "AAServiceTest",
 		DisplayName: "A Test Service",
