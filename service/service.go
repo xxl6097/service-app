@@ -73,9 +73,9 @@ func Run(config *deamon.Config, run func()) {
 	rand.Seed(time.Now().UnixNano())
 	baseDir := filepath.Dir(os.Args[0])
 	os.Chdir(baseDir) // for system service
-
-	fmt.Println("baseDir:", baseDir)
-	fmt.Println("os.Args:", len(os.Args), os.Args)
+	//fmt.Println("baseDir:", baseDir)
+	//fmt.Println("os.Args:", len(os.Args), os.Args)
+	glog.Info("Run...", len(os.Args), os.Args)
 	installer := deamon.NewInstall(config, installPath)
 	if len(os.Args) > 1 {
 		glog.SetNoHeader(false)
@@ -98,13 +98,10 @@ func Run(config *deamon.Config, run func()) {
 			installer.Restart()
 			return
 		case "-d":
-			glog.Println("-d daemon run...")
+			glog.Println("创建进程..")
 			installer.Run()
+			glog.Println("进程结束..")
 			return
-			//case "-nv":
-			//	glog.Println("-nv daemon run...")
-			//	installer.Run()
-			//	return
 		}
 	} else {
 		//installer.InstallByFilename()

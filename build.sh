@@ -5,15 +5,17 @@ version=0.0.1
 
 function build_windows_amd64() {
   #goversioninfo -manifest versioninfo.json
+  rm -rf ${appname}_${version}_windows_amd64.exe
   go generate
-  CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-linkmode internal $ldflags" -o ${appname}_${version}_windows_amd64.exe
+  #CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-linkmode internal" -o ${appname}_${version}_windows_amd64.exe
+  CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags " -s -w -linkmode internal" -o ${appname}_${version}_windows_amd64.exe
 }
 
 
 function build_windows_arm64() {
   #goversioninfo -manifest versioninfo.json
   #go generate
-  CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags "-linkmode internal $ldflags" -o ${appname}_${version}_windows_arm64.exe
+  CGO_ENABLED=0 GOOS=windows GOARCH=arm64 go build -trimpath -ldflags "-linkmode internal" -o ${appname}_${version}_windows_arm64.exe
 }
 
 
