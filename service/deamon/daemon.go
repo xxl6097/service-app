@@ -12,26 +12,31 @@ import (
 	"time"
 )
 
-type Config struct {
-	AppVersion  string
-	ProductName string
-	DisplayName string
-	Description string
-}
+//type Config struct {
+//	AppVersion  string
+//	ProductName string
+//	DisplayName string
+//	Description string
+//}
 
 type daemon struct {
 	running    bool
 	proc       *os.Process
-	config     *Config
+	config     *service.Config
 	svr        *service.Service
 	upgradeUrl string
 }
 
-func newDaemon(config *Config) *daemon {
+func newDaemon(config *service.Config) *daemon {
 	this := &daemon{
 		config:     config,
 		upgradeUrl: "",
 	}
+	s, e := service.New(this, config)
+	if e != nil {
+		glog.Fatal("New", e)
+	}
+	this.svr = &s
 	return this
 }
 
@@ -85,12 +90,12 @@ func (d *daemon) IsRunning() bool {
 	}
 	//glog.Println("status", status)
 	if status == service.StatusRunning {
-		glog.Println(d.config.ProductName, "is running")
+		glog.Println(d.config.Name, "is running")
 		return true
 	} else if status == service.StatusStopped {
-		glog.Println(d.config.ProductName, "is stopped")
+		glog.Println(d.config.Name, "is stopped")
 	} else {
-		glog.Println(d.config.ProductName, "StatusUnknown", status)
+		glog.Println(d.config.Name, "StatusUnknown", status)
 	}
 	return false
 }
@@ -154,7 +159,7 @@ func (d *daemon) Run() {
 	//glog.Println("mydir", mydir)
 	glog.Println("binPath", binPath)
 	conf := &service.Config{
-		Name:        d.config.ProductName,
+		Name:        d.config.Name,
 		DisplayName: d.config.DisplayName,
 		Description: d.config.Description,
 		Executable:  binPath,
@@ -213,9 +218,9 @@ func (d *daemon) Run() {
 	}
 }
 
-func (d *daemon) Control(ctrlComm string, exeAbsPath string, args []string) error {
+func (d *daemon) Control1(ctrlComm string, exeAbsPath string, args []string) error {
 	svcConfig := &service.Config{
-		Name:        d.config.ProductName,
+		Name:        d.config.Name,
 		DisplayName: d.config.DisplayName,
 		Description: d.config.Description,
 		Executable:  exeAbsPath,
@@ -236,5 +241,14 @@ func (d *daemon) Control(ctrlComm string, exeAbsPath string, args []string) erro
 		return e
 	}
 
+	return nil
+}
+
+func (d *daemon) Controls(ctrlComm string) error {
+	e := service.Control(*d.svr, ctrlComm)
+	if e != nil {
+		glog.Println("Control", e)
+		return e
+	}
 	return nil
 }

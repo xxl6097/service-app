@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"github.com/kardianos/service"
 	"github.com/xxl6097/go-glog/glog"
 	"github.com/xxl6097/service-app/service/deamon"
 	"math/rand"
@@ -19,7 +20,7 @@ func initLog(installPath string) {
 	glog.SetNoColor(true)
 }
 
-func Menu(config *deamon.Config, installer *deamon.Installer) {
+func Menu(installer *deamon.Installer) {
 	var choice int
 	for {
 		fmt.Println("1. 安装")
@@ -52,7 +53,7 @@ func Menu(config *deamon.Config, installer *deamon.Installer) {
 			installer.Status()
 			break
 		case 7:
-			glog.Println(config.AppVersion)
+			glog.Println("0.0.1")
 			break
 		case 8:
 			glog.Println("退出程序")
@@ -64,11 +65,12 @@ func Menu(config *deamon.Config, installer *deamon.Installer) {
 	}
 }
 
-func Run(config *deamon.Config, run func()) {
+func Run(config *service.Config, run func()) {
 	if config == nil {
 		glog.Fatal("config is nil")
+		return
 	}
-	installPath := defaultInstallPath + string(filepath.Separator) + config.ProductName
+	installPath := defaultInstallPath + string(filepath.Separator) + config.Name
 	initLog(installPath)
 	rand.Seed(time.Now().UnixNano())
 	baseDir := filepath.Dir(os.Args[0])
@@ -82,7 +84,7 @@ func Run(config *deamon.Config, run func()) {
 		glog.SetNoColor(false)
 		switch os.Args[1] {
 		case "version", "-v", "--version":
-			glog.Println(config.AppVersion)
+			glog.Println("0.0.1")
 			return
 		case "install":
 			installer.Install()
@@ -105,9 +107,9 @@ func Run(config *deamon.Config, run func()) {
 		}
 	} else {
 		//installer.InstallByFilename()
-		Menu(config, installer)
+		Menu(installer)
 	}
-	SetFirewall(config.ProductName)
+	SetFirewall(config.Name)
 	err := SetRLimit()
 	if err != nil {
 		glog.Println("setRLimit error:", err)

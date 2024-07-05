@@ -2,6 +2,7 @@ package deamon
 
 import (
 	"fmt"
+	"github.com/kardianos/service"
 	"github.com/xxl6097/go-glog/glog"
 	"github.com/xxl6097/service-app/service/util"
 	"io"
@@ -13,42 +14,42 @@ import (
 )
 
 type Installer struct {
-	config      *Config
-	demoner     *daemon
-	installPath string
+	demoner *daemon
+	binDir  string
+	binName string
+	binPath string
 }
 
-func NewInstall(_config *Config, _installPath string) *Installer {
-	return &Installer{
-		installPath: _installPath,
-		config:      _config,
-		demoner:     newDaemon(_config),
+func NewInstall(_config *service.Config, _installPath string) *Installer {
+	this := &Installer{
+		binDir: _installPath,
 	}
+	this.binName = _config.Name
+	if util.IsWindows() {
+		this.binName += ".exe"
+	}
+	this.binPath = filepath.Join(this.binDir, this.binName)
+	_config.Executable = this.binPath
+	_config.Arguments = []string{"-d"}
+	this.demoner = newDaemon(_config)
+	return this
 }
 func (this *Installer) Install() {
 	defer glog.Flush()
 	defer glog.Println("安装结束")
-	//installPath := this.installPath + string(filepath.Separator) + this.config.ProductName
-	defaultBinName := this.config.ProductName
-	if util.IsWindows() {
-		defaultBinName += ".exe"
-	}
-	glog.Println("安装路径：", this.installPath)
-	// auto uninstall
-	err := os.MkdirAll(this.installPath, 0775)
+	glog.Println("安装路径：", this.binDir)
+	err := os.MkdirAll(this.binDir, 0775)
 	if err != nil {
-		glog.Printf("MkdirAll %s error:%s", this.installPath, err)
+		glog.Printf("MkdirAll %s error:%s", this.binDir, err)
 		return
 	}
-	err = os.Chdir(this.installPath)
+	err = os.Chdir(this.binDir)
 	if err != nil {
 		glog.Println("cd error:", err)
 		return
 	}
 
 	this.Uninstall()
-
-	targetPath := filepath.Join(this.installPath, defaultBinName)
 
 	binPath, err1 := os.Executable()
 	if err1 != nil {
@@ -61,9 +62,9 @@ func (this *Installer) Install() {
 		glog.Printf("os.OpenFile %s error:%s", os.Args[0], errFiles)
 		return
 	}
-	dst, errFiles := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0775)
+	dst, errFiles := os.OpenFile(this.binPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0775)
 	if errFiles != nil {
-		glog.Printf("os.OpenFile %s error:%s", targetPath, errFiles)
+		glog.Printf("os.OpenFile %s error:%s", this.binPath, errFiles)
 		return
 	}
 
@@ -75,15 +76,15 @@ func (this *Installer) Install() {
 	src.Close()
 	dst.Close()
 	// install system service
-	glog.Println("程序位置:", targetPath)
-	err = this.demoner.Control("install", targetPath, []string{"-d"})
+	glog.Println("程序位置:", this.binPath)
+	err = this.demoner.Controls("install") //.Control("install", this.binPath, []string{"-d"})
 	if err == nil {
 		glog.Println("服务安装成功!")
 	} else {
 		glog.Println("服务安装失败，错误信息:", err)
 	}
 	time.Sleep(time.Second * 2)
-	err = this.demoner.Control("start", targetPath, []string{"-d"})
+	err = this.demoner.Controls("start") //Control("start", this.binPath, []string{"-d"})
 	if err != nil {
 		glog.Println("服务启动失败，错误信息:", err)
 	} else {
@@ -92,16 +93,12 @@ func (this *Installer) Install() {
 }
 
 func (this *Installer) Uninstall() {
-	defer glog.Println("卸载结束")
 	defer glog.Flush()
-	defaultBinName := this.config.ProductName
-	if util.IsWindows() {
-		defaultBinName += ".exe"
-	}
+	defer glog.Println("卸载结束")
 	glog.Println("开始卸载程序")
 	if this.demoner.IsRunning() {
-		err := this.demoner.Control("stop", "", nil)
-		if err != nil { // service maybe not install
+		err := this.demoner.Controls("stop") //.Control("stop", "", nil)
+		if err != nil {                      // service maybe not install
 			glog.Println("卸载失败，错误信息：", err)
 			return
 		}
@@ -109,16 +106,15 @@ func (this *Installer) Uninstall() {
 		glog.Println("服务未运行")
 	}
 
-	err := this.demoner.Control("uninstall", "", nil)
+	err := this.demoner.Controls("uninstall") //Control("uninstall", "", nil)
 	if err != nil {
 		glog.Println("服务卸载失败，错误信息：", err)
 	} else {
 		glog.Println("服务成功卸载！")
 	}
-	glog.Println("卸载程序路径", this.installPath)
-	binPath := filepath.Join(this.installPath, defaultBinName)
-	os.Remove(binPath + "0")
-	os.Remove(binPath)
+	glog.Println("卸载程序路径", this.binDir)
+	os.Remove(this.binPath + "0")
+	os.Remove(this.binPath)
 }
 
 func (this *Installer) InstallByFilename() {
@@ -159,7 +155,7 @@ func (this *Installer) Restart() {
 	defer glog.Flush()
 	defer glog.Println("restart end")
 	glog.Println("重启...")
-	err := this.demoner.Control("restart", "", nil)
+	err := this.demoner.Controls("restart") //Control("restart", "", nil)
 	if err != nil {
 		glog.Println("服务重启失败，错误信息：", err)
 	} else {
@@ -171,7 +167,7 @@ func (this *Installer) Start() {
 	defer glog.Flush()
 	glog.Println("start")
 	defer glog.Println("start end")
-	err := this.demoner.Control("start", "", nil)
+	err := this.demoner.Controls("start") //Control("start", "", nil)
 	if err != nil {
 		glog.Println("start system service error:", err)
 	} else {
@@ -182,7 +178,7 @@ func (this *Installer) Stop() {
 	defer glog.Flush()
 	glog.Println("stop")
 	defer glog.Println("stop end")
-	err := this.demoner.Control("stop", "", nil)
+	err := this.demoner.Controls("stop") //.Control("stop", "", nil)
 	if err != nil {
 		glog.Println("stop system service error:", err)
 	} else {

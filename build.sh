@@ -3,12 +3,18 @@
 appname=AAServiceTest
 version=0.0.1
 
+#function build_windows_amd641() {
+#  #goversioninfo -manifest versioninfo.json
+#  rm -rf ${appname}_${version}_windows_amd64.exe
+#  go generate
+#  #CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-linkmode internal" -o ${appname}_${version}_windows_amd64.exe
+#  CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags " -s -w -linkmode internal" -o ${appname}_${version}_windows_amd64.exe
+#}
+
 function build_windows_amd64() {
-  #goversioninfo -manifest versioninfo.json
-  rm -rf ${appname}_${version}_windows_amd64.exe
-  go generate
-  #CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags "-linkmode internal" -o ${appname}_${version}_windows_amd64.exe
-  CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags " -s -w -linkmode internal" -o ${appname}_${version}_windows_amd64.exe
+  rm -rf /Volumes/Desktop/service/${appname}_${version}_windows_amd64.exe
+  go generate ./cmd/app
+  CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags " -s -w -linkmode internal" -o /Volumes/Desktop/service/${appname}_${version}_windows_amd64.exe ./cmd/app
 }
 
 
